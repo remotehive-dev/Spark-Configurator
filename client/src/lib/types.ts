@@ -25,7 +25,7 @@ export interface PricingConfig {
   discountPercentage: number;
 }
 
-export const TOPICS = [
+export let TOPICS = [
   "Mental Calculation",
   "Faster Calculation",
   "Arithmetic Foundation",
@@ -37,6 +37,10 @@ export const TOPICS = [
   "Pattern Recognition",
   "Olympiad Prep"
 ];
+
+export const updateTopics = (newTopics: string[]) => {
+  TOPICS = newTopics;
+};
 
 export const MOCK_STUDENTS: Student[] = [
   {

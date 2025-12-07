@@ -18,20 +18,31 @@ import {
   Filter,
   Search,
   Trash2,
-  Upload
+  Upload,
+  Plus,
+  Pencil,
+  X,
+  Save
 } from "lucide-react";
 import { Link } from "wouter";
-import { MOCK_STUDENTS } from "@/lib/types";
+import { MOCK_STUDENTS, TOPICS, updateTopics } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function AdminPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const [selectedGrade, setSelectedGrade] = useState("Grade 5");
+  
+  // Topic Management State
+  const [topics, setTopics] = useState(TOPICS);
+  const [newTopic, setNewTopic] = useState("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   const handleImport = () => {
     toast({
@@ -61,6 +72,49 @@ export default function AdminPanel() {
         className: "bg-green-50 border-green-200 text-green-800"
       });
     }, 1500);
+  };
+
+  // Topic Management Functions
+  const handleAddTopic = () => {
+    if (newTopic.trim()) {
+      const updated = [...topics, newTopic.trim()];
+      setTopics(updated);
+      updateTopics(updated);
+      setNewTopic("");
+      toast({
+        title: "Topic Added",
+        description: `"${newTopic}" has been added to Areas of Improvement.`,
+      });
+    }
+  };
+
+  const handleDeleteTopic = (index: number) => {
+    const updated = topics.filter((_, i) => i !== index);
+    setTopics(updated);
+    updateTopics(updated);
+    toast({
+      title: "Topic Removed",
+      description: "Area of improvement removed successfully.",
+    });
+  };
+
+  const startEditing = (index: number) => {
+    setEditingIndex(index);
+    setEditValue(topics[index]);
+  };
+
+  const saveEdit = (index: number) => {
+    if (editValue.trim()) {
+      const updated = [...topics];
+      updated[index] = editValue.trim();
+      setTopics(updated);
+      updateTopics(updated);
+      setEditingIndex(null);
+      toast({
+        title: "Topic Updated",
+        description: "Area of improvement updated successfully.",
+      });
+    }
   };
 
   const filteredStudents = MOCK_STUDENTS.filter(s => 
@@ -188,8 +242,9 @@ export default function AdminPanel() {
             </Card>
           </div>
 
-          {/* Curriculum Upload Section */}
+          {/* Right Column: Curriculum & Topics */}
           <div className="space-y-6">
+             {/* Curriculum Upload */}
              <Card>
                <CardHeader>
                  <CardTitle>Curriculum Assets</CardTitle>
@@ -219,27 +274,61 @@ export default function AdminPanel() {
                       <p className="text-xs text-muted-foreground">PDF, DOCX up to 10MB</p>
                     </div>
                  </div>
+               </CardContent>
+             </Card>
 
-                 <div className="space-y-3">
-                    <Label className="text-xs uppercase text-muted-foreground">Recent Uploads</Label>
-                    {[
-                      { grade: 'Grade 5', date: '2 mins ago', name: 'Math_G5_v2.pdf' },
-                      { grade: 'Grade 8', date: '1 hour ago', name: 'Math_G8_Final.pdf' },
-                      { grade: 'Grade 3', date: 'Yesterday', name: 'Math_G3_Core.pdf' },
-                    ].map((file, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border text-sm">
-                         <div className="flex items-center gap-3">
-                           <FileText className="h-4 w-4 text-primary" />
-                           <div className="flex flex-col">
-                             <span className="font-medium">{file.grade}</span>
-                             <span className="text-xs text-muted-foreground">{file.name}</span>
-                           </div>
+             {/* Topic Management */}
+             <Card>
+               <CardHeader>
+                 <CardTitle>Areas of Improvement</CardTitle>
+                 <CardDescription>Manage customizable topics for students</CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <div className="flex gap-2">
+                   <Input 
+                     placeholder="Add new topic..." 
+                     value={newTopic}
+                     onChange={(e) => setNewTopic(e.target.value)}
+                     onKeyDown={(e) => e.key === 'Enter' && handleAddTopic()}
+                   />
+                   <Button size="icon" onClick={handleAddTopic}>
+                     <Plus className="h-4 w-4" />
+                   </Button>
+                 </div>
+                 
+                 <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+                   {topics.map((topic, index) => (
+                     <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md border text-sm group">
+                       {editingIndex === index ? (
+                         <div className="flex items-center gap-2 flex-1 mr-2">
+                           <Input 
+                             value={editValue} 
+                             onChange={(e) => setEditValue(e.target.value)}
+                             className="h-7 text-sm"
+                             autoFocus
+                           />
+                           <Button size="icon" variant="ghost" className="h-6 w-6 text-green-600" onClick={() => saveEdit(index)}>
+                             <Save className="h-3 w-3" />
+                           </Button>
+                           <Button size="icon" variant="ghost" className="h-6 w-6 text-gray-500" onClick={() => setEditingIndex(null)}>
+                             <X className="h-3 w-3" />
+                           </Button>
                          </div>
-                         <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10">
-                           <Trash2 className="h-3 w-3" />
-                         </Button>
-                      </div>
-                    ))}
+                       ) : (
+                         <>
+                           <span>{topic}</span>
+                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-600" onClick={() => startEditing(index)}>
+                               <Pencil className="h-3 w-3" />
+                             </Button>
+                             <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => handleDeleteTopic(index)}>
+                               <Trash2 className="h-3 w-3" />
+                             </Button>
+                           </div>
+                         </>
+                       )}
+                     </div>
+                   ))}
                  </div>
                </CardContent>
              </Card>

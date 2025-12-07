@@ -22,6 +22,7 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
   const [selectedTopics, setSelectedTopics] = useState<string[]>(config.topics || []);
   const [, setLocation] = useLocation();
 
+  // Ensure config topics are in sync
   const handleTopicToggle = (topic: string) => {
     setSelectedTopics(prev => {
       const newTopics = prev.includes(topic) 
@@ -58,7 +59,7 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
               <h3 className="font-semibold text-lg">Areas of Improvement</h3>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 content-start">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 content-start max-h-[400px] overflow-y-auto pr-2">
               {TOPICS.map((topic) => (
                 <div key={topic} className={cn(
                   "flex items-center space-x-2 p-3 rounded-lg border transition-all cursor-pointer",
