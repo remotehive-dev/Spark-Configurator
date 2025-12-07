@@ -44,34 +44,58 @@ export default function AdminPanel() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
 
-  const handleImport = () => {
-    toast({
-      title: "Import Initiated",
-      description: "Opening Excel file picker...",
-    });
-    setTimeout(() => {
-      toast({
-        title: "Success",
-        description: "Imported 15 new leads successfully.",
-        variant: "default",
-        className: "bg-green-50 border-green-200 text-green-800"
-      });
-    }, 1500);
+  const [uploadedFiles, setUploadedFiles] = useState([
+    { grade: 'Grade 5', date: '2 mins ago', name: 'Math_G5_v2.pdf' },
+    { grade: 'Grade 8', date: '1 hour ago', name: 'Math_G8_Final.pdf' },
+    { grade: 'Grade 3', date: 'Yesterday', name: 'Math_G3_Core.pdf' },
+  ]);
+
+  const handleImportClick = () => {
+    document.getElementById('excel-upload')?.click();
   };
 
-  const handleCurriculumUpload = () => {
-    toast({
-      title: "File Selected",
-      description: `Uploading curriculum for ${selectedGrade}...`,
-    });
-    setTimeout(() => {
+  const handleExcelFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
       toast({
-        title: "Upload Complete",
-        description: "Curriculum PDF updated successfully.",
-        variant: "default",
-        className: "bg-green-50 border-green-200 text-green-800"
+        title: "Importing...",
+        description: `Processing ${file.name}...`,
       });
-    }, 1500);
+      setTimeout(() => {
+        toast({
+          title: "Success",
+          description: `Successfully imported leads from ${file.name}`,
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      }, 1500);
+    }
+  };
+
+  const handleCurriculumClick = () => {
+    document.getElementById('pdf-upload')?.click();
+  };
+
+  const handlePdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      toast({
+        title: "Uploading...",
+        description: `Uploading ${file.name} for ${selectedGrade}...`,
+      });
+      setTimeout(() => {
+        const newFile = {
+          grade: selectedGrade,
+          date: 'Just now',
+          name: file.name
+        };
+        setUploadedFiles([newFile, ...uploadedFiles]);
+        toast({
+          title: "Upload Complete",
+          description: "Curriculum PDF updated successfully.",
+          className: "bg-green-50 border-green-200 text-green-800"
+        });
+      }, 1500);
+    }
   };
 
   // Topic Management Functions
@@ -190,7 +214,14 @@ export default function AdminPanel() {
                    <CardDescription>View and manage student leads</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-2" onClick={handleImport}>
+                  <input 
+                    type="file" 
+                    id="excel-upload" 
+                    className="hidden" 
+                    accept=".xlsx, .xls, .csv"
+                    onChange={handleExcelFileChange}
+                  />
+                  <Button variant="outline" size="sm" className="gap-2" onClick={handleImportClick}>
                     <Upload className="h-4 w-4" />
                     Import Excel
                   </Button>
@@ -265,7 +296,14 @@ export default function AdminPanel() {
                    </Select>
                  </div>
 
-                 <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 flex flex-col items-center justify-center text-center space-y-2 hover:bg-muted/50 transition-colors cursor-pointer" onClick={handleCurriculumUpload}>
+                 <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 flex flex-col items-center justify-center text-center space-y-2 hover:bg-muted/50 transition-colors cursor-pointer" onClick={handleCurriculumClick}>
+                    <input 
+                      type="file" 
+                      id="pdf-upload" 
+                      className="hidden" 
+                      accept=".pdf, .docx"
+                      onChange={handlePdfFileChange}
+                    />
                     <div className="p-3 bg-primary/10 rounded-full">
                        <Upload className="h-6 w-6 text-primary" />
                     </div>
@@ -273,6 +311,27 @@ export default function AdminPanel() {
                       <p className="font-medium text-sm">Click to upload PDF</p>
                       <p className="text-xs text-muted-foreground">PDF, DOCX up to 10MB</p>
                     </div>
+                 </div>
+
+                 <div className="space-y-3">
+                    <Label className="text-xs uppercase text-muted-foreground">Recent Uploads</Label>
+                    {uploadedFiles.map((file, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border text-sm animate-in fade-in slide-in-from-top-2">
+                         <div className="flex items-center gap-3">
+                           <FileText className="h-4 w-4 text-primary" />
+                           <div className="flex flex-col">
+                             <span className="font-medium">{file.grade}</span>
+                             <span className="text-xs text-muted-foreground">{file.name}</span>
+                           </div>
+                         </div>
+                         <div className="flex items-center gap-2">
+                           <span className="text-[10px] text-muted-foreground">{file.date}</span>
+                           <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10">
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
+                         </div>
+                      </div>
+                    ))}
                  </div>
                </CardContent>
              </Card>
