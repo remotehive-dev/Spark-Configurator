@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, UserCheck } from "lucide-react";
+import { Search, UserCheck, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { MOCK_STUDENTS } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,8 +47,15 @@ export default function CounsellorEntry() {
           </div>
           PlanetSpark
         </div>
-        <div className="text-sm text-muted-foreground">
-          Counsellor Portal v2.0
+        <div className="flex items-center gap-4">
+          <Link href="/admin">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary gap-2">
+              <ShieldCheck className="h-4 w-4" /> Admin Panel
+            </Button>
+          </Link>
+          <div className="text-sm text-muted-foreground border-l pl-4">
+            Counsellor Portal v2.0
+          </div>
         </div>
       </header>
 

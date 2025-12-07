@@ -11,14 +11,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-  Search, 
-  Upload, 
-  Filter, 
-  FileText,
-  Trash2,
+  ArrowLeft,
+  BarChart3,
   CheckCircle,
-  BarChart3
+  FileText,
+  Filter,
+  Search,
+  Trash2,
+  Upload
 } from "lucide-react";
+import { Link } from "wouter";
 import { MOCK_STUDENTS } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -74,6 +76,11 @@ export default function AdminPanel() {
              <h1 className="text-3xl font-bold text-foreground">Admin Control Panel</h1>
              <p className="text-muted-foreground">Manage leads, curriculum assets, and system configurations.</p>
           </div>
+          <Link href="/">
+             <Button variant="outline" className="gap-2">
+               <ArrowLeft className="h-4 w-4" /> Back to Counsellor View
+             </Button>
+          </Link>
         </div>
 
         {/* Stats Row */}
