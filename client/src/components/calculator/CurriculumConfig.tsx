@@ -6,9 +6,10 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { TOPICS, CurriculumConfig } from "@/lib/types";
-import { BookOpen, Calendar, Clock, Trophy } from "lucide-react";
+import { BookOpen, Calendar, Clock, Trophy, ArrowRight, Wand2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 interface CurriculumConfigProps {
   config: CurriculumConfig;
@@ -19,6 +20,7 @@ interface CurriculumConfigProps {
 
 export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: CurriculumConfigProps) {
   const [selectedTopics, setSelectedTopics] = useState<string[]>(config.topics || []);
+  const [, setLocation] = useLocation();
 
   const handleTopicToggle = (topic: string) => {
     setSelectedTopics(prev => {
@@ -35,14 +37,64 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
     setConfig({ ...config, durationMonths: value[0] });
   };
 
+  const handleGenerate = () => {
+    const studentId = new URLSearchParams(window.location.search).get("studentId");
+    setLocation(`/presentation?studentId=${studentId}`);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
       <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold text-foreground">Curriculum Configuration</h2>
-        <p className="text-muted-foreground">Customize the learning journey based on student needs.</p>
+        <h2 className="text-2xl font-bold text-foreground">Curriculum Customization</h2>
+        <p className="text-muted-foreground">Select areas of improvement to generate a personalized learning path.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Right Column: Topics (Moved to Left for Emphasis as per request) */}
+        <Card className="h-full border-primary/20 shadow-md">
+          <CardContent className="pt-6 h-full flex flex-col">
+            <div className="flex items-center gap-2 mb-6">
+              <Trophy className="h-5 w-5 text-success" />
+              <h3 className="font-semibold text-lg">Areas of Improvement</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 content-start">
+              {TOPICS.map((topic) => (
+                <div key={topic} className={cn(
+                  "flex items-center space-x-2 p-3 rounded-lg border transition-all cursor-pointer",
+                  selectedTopics.includes(topic) 
+                    ? "bg-primary/5 border-primary shadow-sm" 
+                    : "hover:bg-gray-50 border-transparent bg-gray-50"
+                )}
+                onClick={() => handleTopicToggle(topic)}
+                >
+                  <Checkbox 
+                    id={topic} 
+                    checked={selectedTopics.includes(topic)}
+                    onCheckedChange={() => handleTopicToggle(topic)}
+                    className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  />
+                  <Label 
+                    htmlFor={topic}
+                    className="text-sm font-medium leading-none cursor-pointer flex-1"
+                  >
+                    {topic}
+                  </Label>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-border">
+               <div className="bg-primary/5 text-primary p-3 rounded-md text-sm font-medium text-center flex items-center justify-center gap-2">
+                 <Wand2 className="h-4 w-4" />
+                 {selectedTopics.length > 0 
+                   ? `${selectedTopics.length} focus areas selected` 
+                   : "Select focus areas to customize"}
+               </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Left Column: Structure */}
         <div className="space-y-6">
           <Card>
@@ -136,47 +188,12 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
             </CardContent>
           </Card>
         </div>
-
-        {/* Right Column: Topics */}
-        <Card className="h-full">
-          <CardContent className="pt-6 h-full flex flex-col">
-            <div className="flex items-center gap-2 mb-6">
-              <Trophy className="h-5 w-5 text-success" />
-              <h3 className="font-semibold text-lg">Focus Areas & Topics</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 content-start">
-              {TOPICS.map((topic) => (
-                <div key={topic} className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 transition-colors">
-                  <Checkbox 
-                    id={topic} 
-                    checked={selectedTopics.includes(topic)}
-                    onCheckedChange={() => handleTopicToggle(topic)}
-                    className="data-[state=checked]:bg-success data-[state=checked]:border-success"
-                  />
-                  <Label 
-                    htmlFor={topic}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
-                  >
-                    {topic}
-                  </Label>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-6 pt-6 border-t border-border">
-               <div className="bg-success/10 text-success-foreground p-3 rounded-md text-sm font-medium text-center">
-                 {selectedTopics.length} topics selected for {config.durationMonths} months
-               </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="flex justify-between pt-6">
         <Button variant="outline" onClick={onBack} size="lg">Back</Button>
-        <Button onClick={onNext} size="lg" className="bg-primary hover:bg-primary/90">
-          Continue to Pricing
+        <Button onClick={handleGenerate} size="lg" className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-primary/20">
+          <Sparkles className="h-4 w-4" /> Generate Curriculum & Pricing
         </Button>
       </div>
     </div>

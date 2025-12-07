@@ -7,7 +7,8 @@ import {
   Settings, 
   LogOut, 
   Menu,
-  X
+  X,
+  ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,13 +18,15 @@ export function Sidebar() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Only show sidebar on admin routes
+  if (!location.startsWith("/admin")) return null;
+
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   const navItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-    { icon: Calculator, label: "Curriculum & Pricing", href: "/calculator" },
-    { icon: Users, label: "Students", href: "/students" },
-    { icon: Settings, label: "Settings", href: "/settings" },
+    { icon: LayoutDashboard, label: "Admin Dashboard", href: "/admin" },
+    { icon: Users, label: "Lead Database", href: "/admin" },
+    { icon: Settings, label: "System Settings", href: "/admin" },
   ];
 
   return (
@@ -48,9 +51,15 @@ export function Sidebar() {
             </div>
           </div>
 
-          <div className="flex-1 py-6 px-4 space-y-2">
+          <div className="px-6 py-4">
+             <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+                <ShieldCheck className="h-3 w-3" /> Admin Panel
+             </div>
+          </div>
+
+          <div className="flex-1 px-4 space-y-2">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.label} href={item.href}>
                 <div className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors",
                   location === item.href 

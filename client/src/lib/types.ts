@@ -26,16 +26,16 @@ export interface PricingConfig {
 }
 
 export const TOPICS = [
-  "Public Speaking",
-  "Creative Writing",
-  "Debating",
-  "Vlogging",
-  "Storytelling",
-  "Phonics",
-  "Grammar",
-  "Reading Comprehension",
-  "Vocabulary",
-  "Critical Thinking"
+  "Mental Calculation",
+  "Faster Calculation",
+  "Arithmetic Foundation",
+  "Logical Reasoning",
+  "Word Problems",
+  "Geometry Basics",
+  "Algebraic Thinking",
+  "Data Handling",
+  "Pattern Recognition",
+  "Olympiad Prep"
 ];
 
 export const MOCK_STUDENTS: Student[] = [
