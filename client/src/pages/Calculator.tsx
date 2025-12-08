@@ -19,6 +19,8 @@ export default function Calculator() {
     const searchParams = new URLSearchParams(window.location.search);
     const studentId = searchParams.get("studentId");
     const stepParam = searchParams.get("step");
+    const classesParam = searchParams.get("classes");
+    const monthsParam = searchParams.get("months");
 
     if (studentId) {
       fetch(`/api/students/${studentId}`)
@@ -51,12 +53,36 @@ export default function Calculator() {
         .catch(() => {});
     }
 
+    // Restore curriculum from URL or localStorage
+    if (classesParam || monthsParam) {
+      setCurriculum((prev) => ({
+        ...prev,
+        classesPerWeek: classesParam ? (parseInt(classesParam, 10) as 3 | 5) : prev.classesPerWeek,
+        durationMonths: monthsParam ? Math.max(3, Math.min(24, parseInt(monthsParam, 10))) : prev.durationMonths,
+      }));
+    } else {
+      try {
+        const saved = localStorage.getItem("ps_curriculum_config");
+        if (saved) {
+          const cfg = JSON.parse(saved);
+          setCurriculum((prev) => ({
+            ...prev,
+            classesPerWeek: cfg.classesPerWeek === 5 ? 5 : 3,
+            durationMonths: typeof cfg.durationMonths === "number" ? cfg.durationMonths : prev.durationMonths,
+            topics: Array.isArray(cfg.topics) ? cfg.topics : prev.topics,
+          }));
+        }
+      } catch {}
+    }
+
     if (stepParam) {
       const s = parseInt(stepParam, 10);
       if (s === 2) setStep(2);
       else if (s === 3) setStep(3);
     }
   }, []);
+
+  
 
   const [curriculum, setCurriculum] = useState<CurriculumConfig>({
     methodology: "LPP",
@@ -70,6 +96,12 @@ export default function Calculator() {
     sapEnabled: false,
     discountPercentage: 0
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("ps_curriculum_config", JSON.stringify(curriculum));
+    } catch {}
+  }, [curriculum]);
 
   const steps = [
     { num: 1, label: "Student Details" },

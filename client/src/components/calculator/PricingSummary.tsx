@@ -61,23 +61,25 @@ export function PricingSummary({ student, curriculum, pricing, setPricing, onBac
 
   // Tenure-based LPP block counts
   const tenureUnits = Math.max(1, Math.round((curriculum.durationMonths || 3) / 3));
-  const learnClasses = 12 * tenureUnits;
-  const practiceClasses = 24 * tenureUnits;
-  const performanceClasses = 24 * tenureUnits;
+  const frequencyFactor = (curriculum.classesPerWeek || 3) / 3; // scale relative to 3 classes/week baseline
+  const learnClasses = Math.round(12 * tenureUnits * frequencyFactor);
+  const practiceClasses = Math.round(24 * tenureUnits * frequencyFactor);
+  const performanceClasses = Math.round(24 * tenureUnits * frequencyFactor);
   const totalClasses = learnClasses + practiceClasses + performanceClasses;
   // Display Base Fee = number of Learn classes × 3500 (inclusive of taxes)
   const baseTotalDisplay = learnClasses * 3500;
 
   // LPP class breakdown rendered for users
 
-  const sapDiscountAmount = pricing.sapEnabled ? learnClasses * 1500 : 0;
-  const subtotalAfterCoreDiscounts = baseTotalDisplay - sapDiscountAmount;
+  const targetSAPFinal = learnClasses * 1500;
+  const sapDiscountAmount = pricing.sapEnabled ? Math.max(0, baseTotalDisplay - targetSAPFinal) : 0;
+  const subtotalBeforeCoupon = pricing.sapEnabled ? targetSAPFinal : baseTotalDisplay;
   const targetFinalWithCoupon = learnClasses * 1090;
-  const couponDiscountAmount = appliedCoupon ? Math.max(0, subtotalAfterCoreDiscounts - targetFinalWithCoupon) : 0;
-  const finalPrice = appliedCoupon ? targetFinalWithCoupon : subtotalAfterCoreDiscounts;
+  const couponDiscountAmount = appliedCoupon ? Math.max(0, subtotalBeforeCoupon - targetFinalWithCoupon) : 0;
+  const finalPrice = appliedCoupon ? targetFinalWithCoupon : subtotalBeforeCoupon;
   const sapDiscountPercent = Math.round(baseTotalDisplay > 0 ? (sapDiscountAmount / baseTotalDisplay) * 100 : 0);
-  const couponPercent = appliedCoupon ? Math.round(subtotalAfterCoreDiscounts > 0 ? (couponDiscountAmount / subtotalAfterCoreDiscounts) * 100 : 0) : 0;
-  const totalDiscount = sapDiscountAmount + couponDiscountAmount;
+  const couponPercent = appliedCoupon ? Math.round(subtotalBeforeCoupon > 0 ? (couponDiscountAmount / subtotalBeforeCoupon) * 100 : 0) : 0;
+  const totalDiscount = Math.max(0, baseTotalDisplay - finalPrice);
   const savingsPercentage = Math.round(baseTotalDisplay > 0 ? (totalDiscount / baseTotalDisplay) * 100 : 0);
 
   const applyCoupon = () => {

@@ -71,8 +71,10 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
   };
 
   const handleGenerate = () => {
-    const studentId = new URLSearchParams(window.location.search).get("studentId");
-    setLocation(`/presentation?studentId=${studentId}`);
+    try {
+      localStorage.setItem("ps_curriculum_config", JSON.stringify(config));
+    } catch {}
+    onNext();
   };
 
   return (
