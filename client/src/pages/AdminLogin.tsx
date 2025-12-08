@@ -35,11 +35,11 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
         <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
-            <ShieldCheck className="h-6 w-6 text-primary" />
+          <div className="flex items-center justify-center gap-3">
+            <img src="/brand-logo.png" alt="Logo" className="w-24 h-24 drop-shadow-xl" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} />
           </div>
           <CardTitle className="text-2xl font-bold text-primary">Admin Portal</CardTitle>
-          <CardDescription>Secure access for PlanetSpark Administrators</CardDescription>
+          <CardDescription>Secure access for Administrators</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">

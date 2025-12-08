@@ -5,9 +5,9 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
-import { TOPICS, CurriculumConfig } from "@/lib/types";
+import { CurriculumConfig } from "@/lib/types";
 import { BookOpen, Calendar, Clock, Trophy, ArrowRight, Wand2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 
@@ -20,7 +20,37 @@ interface CurriculumConfigProps {
 
 export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: CurriculumConfigProps) {
   const [selectedTopics, setSelectedTopics] = useState<string[]>(config.topics || []);
+  const [availableTopics, setAvailableTopics] = useState<string[]>([]);
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    setSelectedTopics(config.topics || []);
+  }, [config.topics]);
+
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const studentId = sp.get("studentId");
+    const load = async () => {
+      try {
+        let grade = "";
+        if (studentId) {
+          const rs = await fetch(`/api/students/${studentId}`);
+          if (rs.ok) {
+            const s = await rs.json();
+            grade = String(s.grade || "");
+          }
+        }
+        const list = grade
+          ? await fetch(`/api/topics?grade=${encodeURIComponent(grade)}`).then(r => r.ok ? r.json() : [])
+          : await fetch(`/api/topics`).then(r => r.ok ? r.json() : []);
+        const names = Array.isArray(list) ? list.map((t: any) => String(t.name || t)) : [];
+        setAvailableTopics(names);
+      } catch {
+        setAvailableTopics([]);
+      }
+    };
+    load();
+  }, []);
 
   // Ensure config topics are in sync
   const handleTopicToggle = (topic: string) => {
@@ -35,7 +65,9 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
   };
 
   const handleDurationChange = (value: number[]) => {
-    setConfig({ ...config, durationMonths: value[0] });
+    const v = Math.max(3, Math.min(24, value[0]));
+    const step3 = v % 3 === 0 ? v : v + (3 - (v % 3));
+    setConfig({ ...config, durationMonths: step3 });
   };
 
   const handleGenerate = () => {
@@ -59,8 +91,27 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
               <h3 className="font-semibold text-lg">Areas of Improvement</h3>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 content-start max-h-[400px] overflow-y-auto pr-2">
-              {TOPICS.map((topic) => (
+            <div className="mb-4 min-h-[80px]">
+              {selectedTopics.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedTopics.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => handleTopicToggle(t)}
+                      className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 text-primary px-3 py-1 text-xs"
+                    >
+                      <span>{t}</span>
+                      <span className="rounded-full bg-primary/10 text-primary px-1">×</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">No topics selected yet</div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 content-start max-h-[320px] overflow-y-auto pr-2">
+              {availableTopics.map((topic) => (
                 <div key={topic} className={cn(
                   "flex items-center space-x-2 p-3 rounded-lg border transition-all cursor-pointer",
                   selectedTopics.includes(topic) 
@@ -167,7 +218,7 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-secondary" />
-                    <h3 className="font-semibold text-lg">Duration</h3>
+                    <h3 className="font-semibold text-lg">Tenure (Months)</h3>
                   </div>
                   <span className="text-2xl font-bold text-secondary">{config.durationMonths} Months</span>
                 </div>
@@ -176,15 +227,16 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
                   defaultValue={[config.durationMonths]}
                   min={3}
                   max={24}
-                  step={1}
+                  step={3}
                   onValueChange={handleDurationChange}
                   className="py-4"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground px-1">
-                  <span>3 Months</span>
-                  <span>12 Months</span>
-                  <span>24 Months</span>
+                  <span>3m</span>
+                  <span>12m</span>
+                  <span>24m</span>
                 </div>
+                <div className="text-xs text-muted-foreground">Moves in 2× (3-month) increments: 3, 6, 9, 12, 15, 18, 21, 24 months. Each 3 months adds Learn: 12, Practice: 24, Perform: 24 classes.</div>
               </div>
             </CardContent>
           </Card>

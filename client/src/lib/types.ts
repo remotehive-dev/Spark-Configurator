@@ -25,59 +25,13 @@ export interface PricingConfig {
   discountPercentage: number;
 }
 
-export let TOPICS = [
-  "Mental Calculation",
-  "Faster Calculation",
-  "Arithmetic Foundation",
-  "Logical Reasoning",
-  "Word Problems",
-  "Geometry Basics",
-  "Algebraic Thinking",
-  "Data Handling",
-  "Pattern Recognition",
-  "Olympiad Prep"
-];
+export let TOPICS: string[] = [];
 
 export const updateTopics = (newTopics: string[]) => {
   TOPICS = newTopics;
 };
 
-export const MOCK_STUDENTS: Student[] = [
-  {
-    id: "ST-2025-001",
-    name: "Aarav Gupta",
-    grade: "Grade 5",
-    school: "DPS RK Puram",
-    parentName: "Rajesh Gupta",
-    phone: "+91 98765 43210",
-    email: "rajesh.g@example.com",
-    status: "Demo Completed",
-    lastActivity: "2025-12-06",
-    areasOfImprovement: ["Public Speaking", "Grammar"]
-  },
-  {
-    id: "ST-2025-002",
-    name: "Ishita Patel",
-    grade: "Grade 3",
-    school: "Vasant Valley",
-    parentName: "Meera Patel",
-    phone: "+91 98765 12345",
-    email: "meera.p@example.com",
-    status: "New",
-    lastActivity: "2025-12-07"
-  },
-  {
-    id: "ST-2025-003",
-    name: "Rohan Kumar",
-    grade: "Grade 7",
-    school: "Modern School",
-    parentName: "Suresh Kumar",
-    phone: "+91 99887 76655",
-    email: "suresh.k@example.com",
-    status: "Contacted",
-    lastActivity: "2025-12-05"
-  }
-];
+export const MOCK_STUDENTS: Student[] = [];
 
 export const PRICING_RULES = {
   baseRate3Classes: 750, // Per class

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MOCK_STUDENTS, Student } from "@/lib/types";
+import { Student } from "@/lib/types";
 import { Search, UserCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -17,21 +17,38 @@ export function StudentDetails({ student, setStudent, onNext }: StudentDetailsPr
   const [searchId, setSearchId] = useState("");
   const { toast } = useToast();
 
-  const handleSearch = () => {
-    const found = MOCK_STUDENTS.find(s => s.id.toLowerCase() === searchId.toLowerCase());
-    if (found) {
-      setStudent(found);
-      toast({
-        title: "Student Found",
-        description: `Loaded details for ${found.name}`,
-      });
-    } else {
+  const handleSearch = async () => {
+    try {
+      const res = await fetch(`/api/students`);
+      if (res.ok) {
+        const rows = await res.json();
+        const s = rows.find((r: any) => String(r.id).toLowerCase() === searchId.toLowerCase());
+        if (s) {
+          const mapped: Student = {
+            id: s.id,
+            name: s.name,
+            grade: s.grade || "",
+            school: "",
+            parentName: "",
+            phone: "",
+            email: "",
+            status: s.status || "New",
+            lastActivity: "",
+            areasOfImprovement: [],
+          };
+          setStudent(mapped);
+          toast({ title: "Student Found", description: `Loaded details for ${mapped.name}` });
+        } else {
+          setStudent(null);
+          toast({ title: "Not Found", description: "No student found with this ID. Please check and try again.", variant: "destructive" });
+        }
+      } else {
+        setStudent(null);
+        toast({ title: "Error", description: `${res.status} ${res.statusText}`, variant: "destructive" });
+      }
+    } catch {
       setStudent(null);
-      toast({
-        title: "Not Found",
-        description: "No student found with this ID. Please check and try again.",
-        variant: "destructive"
-      });
+      toast({ title: "Network error", description: "Could not reach API", variant: "destructive" });
     }
   };
 

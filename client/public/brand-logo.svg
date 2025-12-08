@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+  <defs>
+    <radialGradient id="moon" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#0b0b0b" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset dx="0" dy="8"/>
+      <feGaussianBlur stdDeviation="12"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="ringGrad" x1="0" x2="1" y1="0.5" y2="0.5">
+      <stop offset="0%" stop-color="#f3b316"/>
+      <stop offset="100%" stop-color="#ffcc33"/>
+    </linearGradient>
+    <linearGradient id="botGrad" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f56c7b"/>
+      <stop offset="100%" stop-color="#f04d5e"/>
+    </linearGradient>
+  </defs>
+  <circle cx="250" cy="210" r="180" fill="url(#moon)"/>
+  <g filter="url(#shadow)">
+    <circle cx="250" cy="160" r="70" fill="url(#botGrad)"/>
+    <rect x="210" y="135" width="80" height="50" rx="14" ry="14" fill="#fff"/>
+    <circle cx="232" cy="160" r="10" fill="#f04d5e"/>
+    <circle cx="268" cy="160" r="10" fill="#f04d5e"/>
+    <circle cx="220" cy="105" r="18" fill="#f04d5e"/>
+    <circle cx="280" cy="105" r="18" fill="#f04d5e"/>
+    <circle cx="206" cy="95" r="7" fill="#f3b316"/>
+    <circle cx="294" cy="95" r="7" fill="#f3b316"/>
+    <ellipse cx="250" cy="205" rx="140" ry="30" fill="url(#ringGrad)"/>
+    <ellipse cx="250" cy="205" rx="108" ry="18" fill="#fff" opacity="0.65"/>
+    <path d="M175 235c14-9 34-13 75-13c41 0 61 4 75 13" fill="none" stroke="#3aa0d8" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>

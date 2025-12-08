@@ -1,4 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
+import dns from "node:dns";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -21,6 +23,14 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+
+// Allow CORS in production when frontend is hosted separately
+app.use(
+  cors({
+    origin: (process.env.CORS_ORIGIN || "*").split(","),
+    credentials: true,
+  }),
+);
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -60,6 +70,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  dns.setDefaultResultOrder('ipv4first');
+  try { dns.setServers(['8.8.8.8','1.1.1.1']); } catch {}
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

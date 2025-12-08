@@ -9,6 +9,7 @@ import AdminLogin from "@/pages/AdminLogin";
 import CounsellorEntry from "@/pages/CounsellorEntry";
 import Calculator from "@/pages/Calculator";
 import PresentationMode from "@/pages/PresentationMode";
+import PaymentSuccess from "@/pages/PaymentSuccess";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/admin/dashboard" component={AdminPanel} />
       <Route path="/calculator" component={Calculator} />
       <Route path="/presentation" component={PresentationMode} />
+      <Route path="/payment-success" component={PaymentSuccess} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -21,14 +21,40 @@ export default function Calculator() {
     const stepParam = searchParams.get("step");
 
     if (studentId) {
-      const found = MOCK_STUDENTS.find(s => s.id === studentId);
-      if (found) {
-        setStudent(found);
-      }
+      fetch(`/api/students/${studentId}`)
+        .then(r => r.ok ? r.json() : null)
+        .then((s) => {
+          if (s) {
+            setStudent({ id: s.id, name: s.name, grade: s.grade || '', school: '', parentName: '', phone: '', email: '', status: s.status || 'New', lastActivity: '', areasOfImprovement: [] });
+          } else {
+            const fallback = MOCK_STUDENTS.find(x => x.id === studentId);
+            if (fallback) setStudent(fallback);
+            else setStudent({ id: studentId, name: 'Session', grade: '', school: '', parentName: '', phone: '', email: '', status: 'New', lastActivity: '', areasOfImprovement: [] });
+          }
+        })
+        .catch(() => {
+          const fallback = MOCK_STUDENTS.find(x => x.id === studentId);
+          if (fallback) setStudent(fallback);
+          else setStudent({ id: studentId, name: 'Session', grade: '', school: '', parentName: '', phone: '', email: '', status: 'New', lastActivity: '', areasOfImprovement: [] });
+        });
+
+      fetch(`/api/customizations/${studentId}`)
+        .then(r => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data && Array.isArray(data.selectedTopics)) {
+            const tags: string[] = [...(data.selectedTopics || []), ...(data.parentTopics || [])].filter(Boolean);
+            if (tags.length) {
+              setCurriculum((prev) => ({ ...prev, topics: tags }));
+            }
+          }
+        })
+        .catch(() => {});
     }
 
-    if (stepParam && parseInt(stepParam) === 3) {
-      setStep(3);
+    if (stepParam) {
+      const s = parseInt(stepParam, 10);
+      if (s === 2) setStep(2);
+      else if (s === 3) setStep(3);
     }
   }, []);
 
@@ -54,12 +80,10 @@ export default function Calculator() {
   return (
     <div className="min-h-screen bg-background">
        {/* Counsellor Header */}
-       <header className="h-16 border-b bg-white flex items-center px-4 md:px-8 justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-2 font-bold text-xl text-primary">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-sm">
-            PS
-          </div>
-          PlanetSpark
+      <header className="h-16 border-b bg-white flex items-center px-4 md:px-8 justify-between sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <img src="/brand-logo.png" alt="Logo" className="h-10 w-10 drop-shadow-xl" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} />
+          <span className="font-bold text-xl text-primary">PlanetSpark</span>
         </div>
         <div className="flex items-center gap-4">
            {student && <div className="text-sm font-medium hidden md:block text-muted-foreground">Session: {student.name}</div>}
