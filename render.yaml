@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: planetspark-configurator-api
+    env: node
+    rootDirectory: spark-configurator-src
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20
+      - key: CORS_ORIGIN
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
