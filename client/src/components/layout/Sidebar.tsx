@@ -43,11 +43,9 @@ export function Sidebar() {
       )}>
         <div className="flex flex-col h-full">
           <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
-            <div className="flex items-center gap-2 font-bold text-xl text-primary">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
-                PS
-              </div>
-              PlanetSpark
+            <div className="flex items-center gap-3">
+              <img src="/brand-logo.png" alt="Logo" className="h-8 w-8 drop-shadow" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} />
+              <span className="font-bold text-xl text-primary">PlanetSpark</span>
             </div>
           </div>
 

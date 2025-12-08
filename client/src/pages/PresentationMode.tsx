@@ -115,7 +115,7 @@ export default function PresentationMode() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-white border-b px-8 py-4 flex justify-between items-center shadow-sm z-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-sm">PS</div>
+          <img src="/brand-logo.png" alt="Logo" className="h-8 w-8 drop-shadow" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} />
           <div>
             <h1 className="font-bold text-lg text-foreground">Personalized Learning Plan</h1>
             <p className="text-xs text-muted-foreground">Prepared for {student?.name} • {student?.grade}</p>
