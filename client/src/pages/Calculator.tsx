@@ -114,7 +114,7 @@ export default function Calculator() {
        {/* Counsellor Header */}
       <header className="h-16 border-b bg-white flex items-center px-4 md:px-8 justify-between sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <img src="/brand-logo.png" alt="Logo" className="h-10 w-10 drop-shadow-xl" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} />
+          <img src="/brand-logo.png" alt="Logo" className="h-10 w-10 drop-shadow-xl cursor-pointer" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} onClick={() => setLocation('/')} />
           <span className="font-bold text-xl text-primary">PlanetSpark</span>
         </div>
         <div className="flex items-center gap-4">
@@ -173,6 +173,7 @@ export default function Calculator() {
               curriculum={curriculum}
               pricing={pricing}
               setPricing={setPricing}
+              setCurriculum={setCurriculum}
               onBack={() => setStep(2)}
             />
           )}

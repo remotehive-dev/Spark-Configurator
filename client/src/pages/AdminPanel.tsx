@@ -54,6 +54,9 @@ export default function AdminPanel() {
   const [editValue, setEditValue] = useState("");
 
   const [uploadedFiles, setUploadedFiles] = useState([] as { grade: string; date: string; name: string; url?: string }[]);
+  const [quizzes, setQuizzes] = useState<{ grade: string; url: string }[]>([]);
+  const [quizGrade, setQuizGrade] = useState("");
+  const [quizUrl, setQuizUrl] = useState("");
 
   const CATALOG: { grade: string; category: string; topics: string[] }[] = [
     { grade: 'UKG', category: 'Foundational Skills', topics: ['Number Sense','Counting','Place Value (Units, Tens)','Skip Counting (2s, 5s, 10s)','Odd & Even Numbers','Comparison & Ordering','Basic Addition','Basic Subtraction','Estimation','Number Lines','Visual Thinking','Basic Word Problems','Shapes (2D & 3D)','Symmetry','Time Reading (Analog & Digital)'] },
@@ -282,6 +285,7 @@ export default function AdminPanel() {
       .then(r => r.json())
       .then(setUsersList)
       .catch(() => {});
+    fetch('/api/quizzes').then(r => r.json()).then(setQuizzes).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -364,6 +368,84 @@ export default function AdminPanel() {
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Quiz Management</CardTitle>
+              <CardDescription>Configure grade-wise diagnostic quiz links</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="space-y-2">
+                <Label>Grade</Label>
+                <Input placeholder="e.g. 5 or UKG" value={quizGrade} onChange={(e) => setQuizGrade(e.target.value)} />
+              </div>
+              <div className="md:col-span-2 space-y-2">
+                <Label>Quiz URL</Label>
+                <Input placeholder="https://quiz.com/..." value={quizUrl} onChange={(e) => setQuizUrl(e.target.value)} />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={async () => {
+                if (!quizGrade || !quizUrl) { toast({ title: 'Missing fields', description: 'Provide grade and URL.' }); return; }
+                try {
+                  const res = await fetch('/api/quizzes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ grade: quizGrade, url: quizUrl }) });
+                  if (res.ok) {
+                    const saved = await res.json();
+                    setQuizzes((prev) => {
+                      const next = prev.filter(q => q.grade.toLowerCase() !== String(saved.grade).toLowerCase());
+                      next.push({ grade: saved.grade, url: saved.url });
+                      return next.sort((a,b) => a.grade.localeCompare(b.grade));
+                    });
+                    setQuizGrade(""); setQuizUrl("");
+                    toast({ title: 'Saved', description: 'Quiz link updated.' });
+                  } else {
+                    toast({ title: 'Save failed', description: `${res.status} ${res.statusText}` });
+                  }
+                } catch { toast({ title: 'Network error', description: 'Could not save quiz link' }); }
+              }}>Save</Button>
+            </div>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Grade</TableHead>
+                    <TableHead>URL</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {quizzes.map((q) => (
+                    <TableRow key={q.grade}>
+                      <TableCell className="font-medium">{q.grade}</TableCell>
+                      <TableCell className="truncate max-w-xs"><a href={q.url} target="_blank" rel="noreferrer" className="text-primary underline">{q.url}</a></TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => { setQuizGrade(q.grade); setQuizUrl(q.url); }}>Edit</Button>
+                          <Button variant="ghost" size="sm" className="text-destructive" onClick={async () => {
+                            try {
+                              const res = await fetch(`/api/quizzes/${encodeURIComponent(q.grade)}`, { method: 'DELETE' });
+                              if (res.ok) {
+                                setQuizzes((prev) => prev.filter(x => x.grade !== q.grade));
+                                toast({ title: 'Removed', description: q.grade });
+                              } else {
+                                toast({ title: 'Delete failed', description: `${res.status} ${res.statusText}` });
+                              }
+                            } catch { toast({ title: 'Network error', description: 'Could not delete quiz link' }); }
+                          }}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">

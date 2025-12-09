@@ -117,6 +117,45 @@ export default function CounsellorEntry() {
       .catch(() => {});
   };
 
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizUrl, setQuizUrl] = useState<string | null>(null);
+  const [quizReady, setQuizReady] = useState(false);
+  useEffect(() => {
+    const saved = student?.id ? localStorage.getItem(`ps_quiz_ready_${student.id}`) : null;
+    if (saved === 'true') setQuizReady(true);
+  }, [student?.id]);
+  const openQuiz = async () => {
+    if (!student) return;
+    try {
+      const g = String(student.grade || '').trim();
+      const normalized = g.replace(/[^0-9a-zA-Z]/g, '');
+      const gradeKey = normalized === '' ? 'UKG' : normalized;
+      const r = await fetch(`/api/quizzes/${encodeURIComponent(gradeKey)}`);
+      if (r.ok) {
+        const j = await r.json();
+        setQuizUrl(String(j.url));
+        setShowQuiz(true);
+      } else {
+        const all = await fetch('/api/quizzes').then(x => x.ok ? x.json() : []);
+        const fallback = Array.isArray(all) ? all.find((q: any) => String(q.grade).toLowerCase() === gradeKey.toLowerCase()) : null;
+        setQuizUrl(fallback ? String(fallback.url) : null);
+        setShowQuiz(true);
+      }
+    } catch {
+      setQuizUrl(null);
+      setShowQuiz(true);
+    }
+  };
+  const markTestCompleted = () => {
+    if (!student) return;
+    setTimeout(() => {
+      setQuizReady(true);
+      try { localStorage.setItem(`ps_quiz_ready_${student.id}`, 'true'); } catch {}
+    }, 5000);
+    setShowQuiz(false);
+    toast({ title: 'Marked Completed', description: 'Curriculum customization will be enabled shortly.' });
+  };
+
   const toggleTopic = (name: string) => {
     setSelectedTopics((prev) => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]);
   };
@@ -221,7 +260,7 @@ export default function CounsellorEntry() {
       {/* Header */}
       <header className="h-20 border-b bg-white flex items-center px-8 justify-between">
         <div className="flex items-center gap-3">
-          <img src="/brand-logo.png" alt="Logo" className="h-16 w-16 drop-shadow-xl" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} />
+          <img src="/brand-logo.png" alt="Logo" className="h-16 w-16 drop-shadow-xl cursor-pointer" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} onClick={() => setLocation('/')} />
         </div>
         <div className="flex items-center gap-4">
           {!loggedInUser ? (
@@ -242,8 +281,29 @@ export default function CounsellorEntry() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-lg space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+  <main className="flex-1 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-2xl space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="relative overflow-hidden rounded-xl border bg-white shadow-md">
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-secondary/10 rounded-full blur-2xl" />
+            <div className="relative p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <div className="text-xs text-muted-foreground uppercase">USP</div>
+                <div className="font-semibold">Personalized LPP</div>
+                <div className="text-sm text-muted-foreground">Adaptive topics and practice aligned to student goals.</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground uppercase">Progress</div>
+                <div className="font-semibold">Visual Growth Reports</div>
+                <div className="text-sm text-muted-foreground">Share outcome-driven charts during counseling.</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground uppercase">Value</div>
+                <div className="font-semibold">Transparent Pricing</div>
+                <div className="text-sm text-muted-foreground">SAP and teacher discounts reflected instantly.</div>
+              </div>
+            </div>
+          </div>
           <div className="text-center space-y-2">
             <h1 className="text-4xl font-bold tracking-tight text-foreground">Welcome, Counsellor</h1>
             <p className="text-lg text-muted-foreground">Enter Student ID to begin the consultation session.</p>
@@ -271,7 +331,7 @@ export default function CounsellorEntry() {
 
           {student && (
             <Card className="border-2 border-primary/10 bg-white shadow-xl overflow-hidden animate-in zoom-in-95 duration-300">
-               <div className="h-2 bg-gradient-to-r from-primary to-secondary" />
+              <div className="h-2 bg-linear-to-r from-primary to-secondary" />
                <CardContent className="pt-6 pb-8 px-8 text-center space-y-6">
                   <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary mb-4">
                     <UserCheck className="h-10 w-10" />
@@ -298,6 +358,7 @@ export default function CounsellorEntry() {
                       size="lg" 
                       className="w-full h-12 text-lg font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
                       onClick={handleStartSession}
+                      disabled={!quizReady}
                     >
                       Start Curriculum Customization
                     </Button>
@@ -344,6 +405,12 @@ export default function CounsellorEntry() {
                         <Button variant="ghost" onClick={() => { setCustomizing(false); setSelectedTopics([]); setParentTopics([]); }}>Cancel</Button>
                         <Button onClick={handleSubmitSelection} className="shadow">Submit</Button>
                       </div>
+                    </div>
+                  )}
+                  {!customizing && (
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Button variant="outline" className="w-full" onClick={openQuiz}>Open Diagnostic Quiz</Button>
+                      <Button className="w-full" onClick={markTestCompleted}>Mark Test Completed</Button>
                     </div>
                   )}
                </CardContent>
@@ -399,6 +466,25 @@ export default function CounsellorEntry() {
               <Button variant="ghost" onClick={() => setShowLogin(false)}>Cancel</Button>
               <Button onClick={handleLogin}>Login</Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showQuiz} onOpenChange={setShowQuiz}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Grade-wise Diagnostic Quiz</DialogTitle>
+            <DialogDescription>Complete the quiz and mark as completed.</DialogDescription>
+          </DialogHeader>
+          <div className="w-full h-[520px] border rounded-md overflow-hidden">
+            {quizUrl ? (
+              <iframe src={quizUrl} className="w-full h-full" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">Quiz not available for this grade</div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 pt-3">
+            <Button variant="ghost" onClick={() => setShowQuiz(false)}>Close</Button>
+            <Button onClick={markTestCompleted}>Mark Test Completed</Button>
           </div>
         </DialogContent>
       </Dialog>

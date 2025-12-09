@@ -115,7 +115,7 @@ export default function PresentationMode() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-white border-b px-8 py-4 flex justify-between items-center shadow-sm z-10">
         <div className="flex items-center gap-3">
-          <img src="/brand-logo.png" alt="Logo" className="h-8 w-8 drop-shadow" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} />
+          <img src="/brand-logo.png" alt="Logo" className="h-8 w-8 drop-shadow cursor-pointer" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} onClick={() => setLocation('/')} />
           <div>
             <h1 className="font-bold text-lg text-foreground">Personalized Learning Plan</h1>
             <p className="text-xs text-muted-foreground">Prepared for {student?.name} • {student?.grade}</p>
@@ -133,8 +133,8 @@ export default function PresentationMode() {
               {['3','6','9','12','15','18','21','24'].map(m => (<SelectItem key={m} value={m}>{m} months</SelectItem>))}
             </SelectContent>
           </Select>
-          <Button onClick={() => setLocation(`/calculator?studentId=${student?.id}&step=3`)} className="gap-2 shadow-md">
-            Proceed to Pricing <ArrowRight className="h-4 w-4" />
+          <Button onClick={() => setLocation(`/admission?studentId=${student?.id}&tenure=${tenure}`)} className="gap-2 shadow-md">
+            Compare Admission <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </header>

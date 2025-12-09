@@ -17,18 +17,23 @@ interface PricingSummaryProps {
   curriculum: CurriculumConfig;
   pricing: PricingConfig;
   setPricing: (pricing: PricingConfig) => void;
+  setCurriculum?: (c: CurriculumConfig) => void;
   onBack: () => void;
 }
 
-export function PricingSummary({ student, curriculum, pricing, setPricing, onBack }: PricingSummaryProps) {
+export function PricingSummary({ student, curriculum, pricing, setPricing, setCurriculum, onBack }: PricingSummaryProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [employeeCouponInput, setEmployeeCouponInput] = useState("");
+  const [employeeApplied, setEmployeeApplied] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [admissionConfirmed, setAdmissionConfirmed] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
@@ -78,7 +83,9 @@ export function PricingSummary({ student, curriculum, pricing, setPricing, onBac
   const subtotalBeforeCoupon = pricing.sapEnabled ? targetSAPFinal : baseTotalDisplay;
   const targetFinalWithCoupon = learnClasses * 1090;
   const couponDiscountAmount = appliedCoupon ? Math.max(0, subtotalBeforeCoupon - targetFinalWithCoupon) : 0;
-  const finalPrice = appliedCoupon ? targetFinalWithCoupon : subtotalBeforeCoupon;
+  let finalPrice = appliedCoupon ? targetFinalWithCoupon : subtotalBeforeCoupon;
+  const employeeDiscountAmount = employeeApplied ? Math.round(finalPrice * 0.05) : 0;
+  finalPrice = finalPrice - employeeDiscountAmount;
   const sapDiscountPercent = Math.round(baseTotalDisplay > 0 ? (sapDiscountAmount / baseTotalDisplay) * 100 : 0);
   const couponPercent = appliedCoupon ? Math.round(subtotalBeforeCoupon > 0 ? (couponDiscountAmount / subtotalBeforeCoupon) * 100 : 0) : 0;
   const totalDiscount = Math.max(0, baseTotalDisplay - finalPrice);
@@ -99,6 +106,19 @@ export function PricingSummary({ student, curriculum, pricing, setPricing, onBac
         description: "Please enter a valid 6-character alphanumeric code.",
         variant: "destructive"
       });
+    }
+  };
+
+  const applyEmployeeCoupon = () => {
+    if (employeeCouponInput.length === 6 && /^[a-zA-Z0-9]+$/.test(employeeCouponInput)) {
+      setEmployeeApplied(employeeCouponInput);
+      toast({
+        title: "Employee Coupon Applied",
+        description: "Warning: You have only 1 coupon left, 3 consumed so far. Use wisely.",
+        className: "bg-amber-50 text-amber-900 border-amber-200"
+      });
+    } else {
+      toast({ title: "Invalid Code", description: "Enter 6-character alphanumeric code.", variant: "destructive" });
     }
   };
 
@@ -252,11 +272,18 @@ export function PricingSummary({ student, curriculum, pricing, setPricing, onBac
                 </div>
                 <div className="space-y-1">
                   <span className="text-muted-foreground">Tenure (Months)</span>
-                  <p className="font-semibold">{tenureUnits * 3} Months</p>
+                  <div className="flex items-center gap-2">
+                    <Input type="number" min={3} max={24} step={1} value={curriculum.durationMonths}
+                      onChange={(e) => setCurriculum?.({ ...curriculum, durationMonths: Math.max(3, Math.min(24, parseInt(e.target.value || '0'))) })}
+                      className="w-24 h-8 text-sm" />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <span className="text-muted-foreground">Frequency</span>
-                  <p className="font-semibold">{curriculum.classesPerWeek} Classes/Week</p>
+                  <div className="flex items-center gap-2">
+                    <Button variant={curriculum.classesPerWeek === 3 ? 'default' : 'outline'} size="sm" onClick={() => setCurriculum?.({ ...curriculum, classesPerWeek: 3 })}>3/week</Button>
+                    <Button variant={curriculum.classesPerWeek === 5 ? 'default' : 'outline'} size="sm" onClick={() => setCurriculum?.({ ...curriculum, classesPerWeek: 5 })}>5/week</Button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <span className="text-muted-foreground">Total Sessions</span>
@@ -383,6 +410,12 @@ export function PricingSummary({ student, curriculum, pricing, setPricing, onBac
                     <span>- ₹{couponDiscountAmount.toLocaleString()}</span>
                   </div>
                 )}
+                {employeeDiscountAmount > 0 && (
+                  <div className="flex justify-between text-amber-700">
+                    <span>Employee Discount ({employeeApplied}) 5%</span>
+                    <span>- ₹{employeeDiscountAmount.toLocaleString()}</span>
+                  </div>
+                )}
               </div>
 
               <Separator />
@@ -417,14 +450,37 @@ export function PricingSummary({ student, curriculum, pricing, setPricing, onBac
                  </div>
               </div>
 
-              <div className="pt-2 space-y-3">
-                <Button className="w-full h-12 text-lg gap-2 shadow-md hover:shadow-lg transition-all" onClick={handleGeneratePaymentLink} disabled={generating}>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                 <Label className="text-xs uppercase text-muted-foreground">Employee Coupon Code</Label>
+                 <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                    <Input 
+                       placeholder="EMP123" 
+                       className="pl-8 h-9 text-sm uppercase" 
+                       maxLength={6}
+                       value={employeeCouponInput}
+                       onChange={(e) => setEmployeeCouponInput(e.target.value.toUpperCase())}
+                     />
+                  </div>
+                  <Button size="sm" variant="secondary" onClick={applyEmployeeCoupon} disabled={!!employeeApplied}>Apply</Button>
+                 </div>
+                 {!!employeeApplied && (
+                   <p className="text-xs text-amber-700">You have only 1 coupon left • 3 consumed so far</p>
+                 )}
+              </div>
+
+      <div className="pt-2 space-y-3">
+                <Button className="w-full h-12 text-lg gap-2 shadow-md hover:shadow-lg transition-all" onClick={handleGeneratePaymentLink} disabled={generating || !admissionConfirmed}>
                   <Share2 className="h-4 w-4" /> Generate Payment Link
                 </Button>
                 <Button variant="outline" className="w-full gap-2" onClick={handleDownloadProposal} disabled={generating}>
                   <Download className="h-4 w-4" /> Download Proposal PDF
                 </Button>
-                <Button className="w-full gap-2" onClick={() => setFormOpen(true)}>
+                <Button variant={admissionConfirmed ? "secondary" : "default"} className="w-full h-12 text-lg gap-2 shadow-md hover:shadow-lg transition-all" onClick={() => { setAdmissionConfirmed(true); setConfirmOpen(true); }}>
+                  Confirm Admission
+                </Button>
+                <Button className="w-full gap-2" onClick={() => setFormOpen(true)} disabled={!admissionConfirmed}>
                   Admission Form
                 </Button>
               </div>
@@ -455,6 +511,45 @@ export function PricingSummary({ student, curriculum, pricing, setPricing, onBac
               className="w-full h-full block"
               frameBorder={0}
             />
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span>🎉🥳🎓</span>
+              <span>Welcome to PlanetSpark</span>
+            </DialogTitle>
+            <DialogDescription>
+              {pricing.sapEnabled ? "SAP Membership Confirmed" : "Regular Admission Confirmed"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Thank you for choosing a program that fits your child’s goals. Here are key benefits you’ve opted for:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(pricing.sapEnabled ? [
+                "1:1 Personalised Learning",
+                "Olympiad / Competitive Prep",
+                "Mental Maths / Fast Calculation",
+                "Lifetime LMS Access",
+                "Flexible Days/Time",
+                "Top Rated Coach Choice"
+              ] : [
+                "Structured Curriculum",
+                "Weekly Class Routine",
+                "Practice + Performance Blocks",
+                "Progress Tracking",
+                "Parent Updates",
+                "Supportive Community"
+              ]).map(tag => (
+                <div key={tag} className="flex items-center gap-2 text-sm bg-white px-3 py-2 rounded-md border border-gray-200 shadow-sm">
+                  <Check className="h-4 w-4 shrink-0 text-primary" /> {tag}
+                </div>
+              ))}
+            </div>
+            <Separator />
+            <div className="text-center text-sm text-muted-foreground">You can now generate the payment link and open the admission form.</div>
           </div>
         </DialogContent>
       </Dialog>

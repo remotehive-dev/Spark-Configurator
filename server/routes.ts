@@ -140,6 +140,19 @@ export async function registerRoutes(
   });
 
   const topicSubscribers: ExResponse[] = [];
+  const quizzesByGrade: Record<string, string> = {
+    "UKG": "https://quiz.com/baf819f9-42c5-4fa5-ba70-87e54c6e3d65/",
+    "1": "https://quiz.com/baf819f9-42c5-4fa5-ba70-87e54c6e3d65/",
+    "2": "https://quiz.com/f61700f1-c3f7-438c-a0bf-a011a85711e3/",
+    "3": "https://quiz.com/f61700f1-c3f7-438c-a0bf-a011a85711e3/",
+    "4": "https://quiz.com/f61700f1-c3f7-438c-a0bf-a011a85711e3/",
+    "5": "https://quiz.com/6e5f75a2-5cb3-4c87-9c14-014ec832c04b/",
+    "6": "https://quiz.com/6e5f75a2-5cb3-4c87-9c14-014ec832c04b/",
+    "7": "https://quiz.com/4161525c-f53f-4a3e-ba46-a28bbf5b927d/",
+    "8": "https://quiz.com/4161525c-f53f-4a3e-ba46-a28bbf5b927d/",
+    "9": "https://quiz.com/cd837231-2f8a-425e-8ab6-d7fc05cca27d/",
+    "10": "https://quiz.com/cd837231-2f8a-425e-8ab6-d7fc05cca27d/",
+  };
   if (hasSupabase && supabase) {
     const channel = supabase.channel('topics_changes');
     channel.on('postgres_changes', { event: '*', schema: 'public', table: 'topics' }, async () => {
@@ -170,6 +183,29 @@ export async function registerRoutes(
       if (idx >= 0) topicSubscribers.splice(idx, 1);
       res.end();
     });
+  });
+
+  app.get('/api/quizzes', async (_req, res) => {
+    const list = Object.entries(quizzesByGrade).map(([grade, url]) => ({ grade, url }));
+    res.json(list);
+  });
+  app.get('/api/quizzes/:grade', async (req, res) => {
+    const grade = String(req.params.grade || '');
+    const url = quizzesByGrade[grade];
+    if (!url) return res.status(404).json({ message: 'Not Found' });
+    res.json({ grade, url });
+  });
+  app.post('/api/quizzes', async (req, res) => {
+    const { grade, url } = req.body || {};
+    if (!grade || !url) return res.status(400).json({ message: 'grade and url required' });
+    quizzesByGrade[String(grade)] = String(url);
+    res.status(201).json({ grade: String(grade), url: String(url) });
+  });
+  app.delete('/api/quizzes/:grade', async (req, res) => {
+    const grade = String(req.params.grade || '');
+    if (!grade) return res.status(400).json({ message: 'grade required' });
+    delete quizzesByGrade[grade];
+    res.json({ ok: true });
   });
 
   app.get("/api/topics", async (_req, res, next) => {
