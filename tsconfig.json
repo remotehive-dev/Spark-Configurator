@@ -1,10 +1,8 @@
 {
   "extends": "./spark-configurator-src/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./spark-configurator-src",
     "typeRoots": ["./spark-configurator-src/node_modules/@types"],
-    "paths": {
-      "vite/client": ["./spark-configurator-src/node_modules/vite/client.d.ts"]
-    }
+    "jsx": "preserve"
   }
 }
