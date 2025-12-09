@@ -9,6 +9,7 @@ import { Student, CurriculumConfig, PricingConfig } from "@/lib/types";
 import { Check, Crown, Download, Share2, Sparkles, Tag, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 interface PricingSummaryProps {
@@ -21,6 +22,7 @@ interface PricingSummaryProps {
 
 export function PricingSummary({ student, curriculum, pricing, setPricing, onBack }: PricingSummaryProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -217,7 +219,12 @@ export function PricingSummary({ student, curriculum, pricing, setPricing, onBac
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
+      <div className="flex items-center justify-between">
+        <Button variant="outline" onClick={() => setLocation(`/presentation?studentId=${student.id}&tenure=${curriculum.durationMonths}`)} className="gap-2">
+          Back
+        </Button>
+      </div>
       <div className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold text-foreground">Pricing & Proposal</h2>
         <p className="text-muted-foreground">Review final details and generate the offer.</p>

@@ -74,11 +74,20 @@ export function CurriculumConfiguration({ config, setConfig, onNext, onBack }: C
     try {
       localStorage.setItem("ps_curriculum_config", JSON.stringify(config));
     } catch {}
-    onNext();
+    const sp = new URLSearchParams(window.location.search);
+    const studentId = sp.get("studentId") || "";
+    const tenure = String(config.durationMonths || 6);
+    const classes = String(config.classesPerWeek || 3);
+    setLocation(`/presentation?studentId=${encodeURIComponent(studentId)}&tenure=${encodeURIComponent(tenure)}&classes=${encodeURIComponent(classes)}`);
   };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+      <div className="flex items-center justify-between">
+        <Button variant="outline" onClick={onBack} className="gap-2">
+          Back
+        </Button>
+      </div>
       <div className="flex flex-col gap-2">
         <h2 className="text-2xl font-bold text-foreground">Curriculum Customization</h2>
         <p className="text-muted-foreground">Select areas of improvement to generate a personalized learning path.</p>

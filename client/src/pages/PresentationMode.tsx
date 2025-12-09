@@ -122,6 +122,9 @@ export default function PresentationMode() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={() => setLocation(`/calculator?studentId=${student?.id}&step=2`)}>
+            Back
+          </Button>
           <Select value={tenure} onValueChange={setTenure}>
             <SelectTrigger className="w-28">
               <SelectValue />
