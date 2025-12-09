@@ -80,7 +80,7 @@ export default function AdmissionComparison() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-primary/5 to-secondary/10">
+    <div className="min-h-screen bg-linear-to-b from-white via-primary/5 to-secondary/10">
       <header className="bg-white/80 backdrop-blur border-b px-8 py-4 flex justify-between items-center shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <img src="/brand-logo.png" alt="Logo" className="h-8 w-8 drop-shadow cursor-pointer" onError={(e) => { (e.target as HTMLImageElement).src = '/brand-logo.svg'; }} onClick={() => setLocation('/')} />
@@ -114,7 +114,7 @@ export default function AdmissionComparison() {
                 ))}
               </div>
             </div>
-            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-secondary/20 p-6 border">
+            <div className="rounded-xl bg-linear-to-br from-primary/10 to-secondary/20 p-6 border">
               <div className="text-xs text-muted-foreground">Why SAP?</div>
               <div className="text-lg font-semibold">Outcome-first, parent-friendly</div>
               <ul className="mt-2 space-y-2 text-sm text-muted-foreground list-disc list-inside">
